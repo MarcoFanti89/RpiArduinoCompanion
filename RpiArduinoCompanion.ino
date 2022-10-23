@@ -3,7 +3,6 @@
  * 
  * Check every 30 secs that there is a TCP server listening on port 22 (SSH service)
  * If the connection is unsuccessful for 5 minutes
-  
  */
 
 #include <SPI.h>         
