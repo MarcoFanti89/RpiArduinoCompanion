@@ -2,7 +2,7 @@
  * @Author github.com/marcofanti89
  * 
  * Check every 30 secs that there is a TCP server listening on port 22 (SSH service)
- * If the connection is unsuccessful for 5 minutes
+ * If the connection is unsuccessful for too long, reboot the Rpi by unplugging and replugging it
  */
 
 #include <SPI.h>         
@@ -24,29 +24,29 @@ byte rpiIp[] = {192,168,1,2};
 
 //30 seconds
 #define INTERVAL 30000
-#define MAX_FAILURES_BEFORE_RETRY 10
+#define RPI_MAX_FAILURES_BEFORE_RETRY 6
 
-// milliseconds the RUN pin will be set to zero
-//to reboot the rpi
-#define RESET_MS 200
+// milliseconds to keep raspberry off
+#define RPI_POWEROFF_MS 5000
 
 //SPI pin to set to control sd card
 #define SD_SELECT 4
-//pin RUN of the rpi3
-#define RPI_RUN 7
+//pin to control the relay
+#define RELAY_ONE 7
 
-int rpi_intervals_from_last_success;
+int rpi_failure_count;
 
 EthernetClient client;
 
 void setup() 
 {
   Serial.begin(9600);
-
+  Serial.println("Arduino starting!");
+  
   pinMode (SD_SELECT, OUTPUT);
-  digitalWrite (SD_SELECT, HIGH); //turn SD card off so doe not interfere
+  digitalWrite (SD_SELECT, HIGH); //turn SD card off so does not interfere
 
-  pinMode (RPI_RUN, INPUT);
+  pinMode (RELAY_ONE, INPUT); //disconnect from relay control = normally closed circuit
   
   // start Ethernet
   if(Ethernet.begin(arduinoMac) == 0){
@@ -67,33 +67,39 @@ void setup()
     usingDhcp = true;
   }
     
-  rpi_intervals_from_last_success = 0;
+  rpi_failure_count = 0;
 }
 
 void loop()
 {
   Serial.print("Connecting to RPi SSH Server... ");
-  int connectResult = client.connect(rpiIp, 22);
+  testConnectivity(rpiIp, 22, &rpi_failure_count);
+  
+  if(rpi_failure_count >= RPI_MAX_FAILURES_BEFORE_RETRY){
+    resetPin(RELAY_ONE, RPI_POWEROFF_MS);
+    rpi_failure_count = 0;
+  }
+  
+  delay(INTERVAL);
+  
+  renewDhcp();
+}
+
+void testConnectivity(byte address[], int port, int* failure_count){
+  int connectResult = client.connect(address, port);
+  client.stop();
   
   if(connectResult){
     Serial.println("SUCCESS!! ");
-    
-    rpi_intervals_from_last_success = 0;
-  } else {
-    Serial.print("FAILED :( Last successful connection was ");
-    Serial.print(rpi_intervals_from_last_success);
-    Serial.println(" cycles ago");
-  }
-  client.stop();
-
-  delay(INTERVAL);
-
-  if(rpi_intervals_from_last_success >= MAX_FAILURES_BEFORE_RETRY){
-    resetPi();
-  }
+    *failure_count = 0;
   
-  rpi_intervals_from_last_success++;
-  renewDhcp();
+  } else {
+    (*failure_count)++;
+    Serial.println("Fail ");
+    Serial.print("Current failure count: ");
+    Serial.println(*failure_count);
+  }
+    
 }
 
 void renewDhcp(){
@@ -102,16 +108,22 @@ void renewDhcp(){
   }
 
   int dhcpRenewResult = Ethernet.maintain();
-  Serial.print("Dhcp renew: ");
-  Serial.println(dhcpRenewResult);
 }
 
-void resetPi(){
-  Serial.print("Reboot button pressed... ");
-  pinMode (RPI_RUN, OUTPUT);
-  digitalWrite (RPI_RUN, LOW);
-  delay(RESET_MS);
-  pinMode (RPI_RUN, INPUT);
+void resetPin(int pinNumber, int wait_time){
+
+  Serial.print("Open switch on pin ");
+  Serial.print(pinNumber);
+  Serial.print("... ");
+  
+  pinMode (pinNumber, OUTPUT);
+  digitalWrite (pinNumber, LOW); //open switch
   Serial.println("DONE\n");
-  rpi_intervals_from_last_success = 0;
+
+  delay(wait_time);
+  
+  Serial.print("Closing switch... ");
+  pinMode (pinNumber, INPUT);
+  Serial.println("DONE\n");
+  
 }
