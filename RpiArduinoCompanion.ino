@@ -38,6 +38,10 @@ int rpi_failure_count;
 
 EthernetClient client;
 
+// ---------------------------------------------
+// -------------- SETUP ------------------------
+// ---------------------------------------------
+
 void setup() 
 {
   Serial.begin(9600);
@@ -70,6 +74,10 @@ void setup()
   rpi_failure_count = 0;
 }
 
+// ---------------------------------------------
+// -------------- MAIN LOOP --------------------
+// ---------------------------------------------
+
 void loop()
 {
   Serial.print("Connecting to RPi SSH Server... ");
@@ -85,6 +93,10 @@ void loop()
   renewDhcp();
 }
 
+// ---------------------------------------------
+// -------------- Functions---------------------
+// ---------------------------------------------
+
 void testConnectivity(byte address[], int port, int* failure_count){
   int connectResult = client.connect(address, port);
   client.stop();
@@ -99,7 +111,6 @@ void testConnectivity(byte address[], int port, int* failure_count){
     Serial.print("Current failure count: ");
     Serial.println(*failure_count);
   }
-    
 }
 
 void renewDhcp(){
@@ -125,5 +136,4 @@ void resetPin(int pinNumber, int wait_time){
   Serial.print("Closing switch... ");
   pinMode (pinNumber, INPUT);
   Serial.println("DONE\n");
-  
 }
