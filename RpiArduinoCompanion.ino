@@ -5,15 +5,14 @@
  * If the connection is unsuccessful for too long, reboot the Rpi by unplugging and replugging it
  */
 
-#include <SPI.h>         
+#include <SPI.h>
 #include <Ethernet.h>
 
-//mac address for ethernet shield c5:9b:ab:ab:22:31
 byte arduinoMac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0xA8, 0x3D };
 
 //this will only be used in case dhcp configuration fails
 byte arduinoIp[] = {192,168,1,253};
-byte dnsIp[] = {192,168,1,1}; 
+byte dnsIp[] = {192,168,1,1};
 byte gatewayIp[] = {192,168,1,1};
 byte subnetMask[] = {255,255,255,0};
 
@@ -27,7 +26,7 @@ byte rpiIp[] = {192,168,1,2};
 #define RPI_MAX_FAILURES_BEFORE_RETRY 6
 
 // milliseconds to keep raspberry off
-#define RPI_POWEROFF_MS 5000
+#define RPI_POWEROFF_MS 10000
 
 //SPI pin to set to control sd card
 #define SD_SELECT 4
@@ -42,14 +41,14 @@ EthernetClient client;
 // -------------- SETUP ------------------------
 // ---------------------------------------------
 
-void setup() 
+void setup()
 {
   Serial.begin(9600);
   Serial.println("Arduino starting!");
   
   pinMode (SD_SELECT, OUTPUT);
   digitalWrite (SD_SELECT, HIGH); //turn SD card off so does not interfere
-
+  
   pinMode (RELAY_ONE, INPUT); //disconnect from relay control = normally closed circuit
   
   // start Ethernet
@@ -70,7 +69,7 @@ void setup()
   } else {
     usingDhcp = true;
   }
-    
+  
   rpi_failure_count = 0;
 }
 
