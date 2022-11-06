@@ -106,14 +106,11 @@ void setup()
 void loop()
 {
   testRpiConnectivity();
-
   testDnsServerConnectivity();
   
   delay(INTERVAL);
   
   renewDhcp();
-
-  
   router_loops_from_last_reboot++;
 }
 
