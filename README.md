@@ -9,7 +9,7 @@ Now no more, the Raspberry is automatically rebooted by the Arduino when necessa
 
 ## Hardware used
 
-- Arduino Uno board ([original](https://store.arduino.cc/products/arduino-uno-rev3), [improved](https://www.keyestudio.com/products/keyestudio-uno-r3-motor-plus-development-board-for-arduinousb-cable))
+- Arduino Uno R3 board ([original](https://store.arduino.cc/products/arduino-uno-rev3))
 - Ethernet shield ([original W5500](https://store.arduino.cc/collections/shields/products/arduino-ethernet-shield-2), [the one used W5100](https://www.keyestudio.com/products/keyestudio-w5100-ethernet-shield-board-with-sd-card-slot-original-chip-compatible-with-arduino-unor3-mega-2560r3-due-1280))
 - Relay module ([example](https://www.elegoo.com/products/elegoo-8-channel-relay-module-kit)) in my case has to support 250 V AC
 
